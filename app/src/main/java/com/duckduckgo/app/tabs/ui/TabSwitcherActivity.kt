@@ -162,6 +162,12 @@ class TabSwitcherActivity : DuckDuckGoActivity(), TabSwitcherListener, Coroutine
     private fun configureViewReferences() {
         tabsRecycler = findViewById(R.id.tabsRecycler)
         toolbar = findViewById(R.id.toolbar)
+        
+        // Add debug feature for random tabs
+        toolbar.setOnLongClickListener {
+            launch { viewModel.insertRandomTabs() }
+            true
+        }
     }
 
     private fun configureRecycler() {
@@ -189,7 +195,10 @@ class TabSwitcherActivity : DuckDuckGoActivity(), TabSwitcherListener, Coroutine
 
     private fun configureObservers() {
         viewModel.tabs.observe(this) { tabs ->
-            render(tabs)
+
+            // TODO would need to map the animation
+            val tabSwitcherItems = tabs.map { TabSwitcherItem.Tab(it) }
+            render(tabSwitcherItems)
 
             val noTabSelected = tabs.none { it.tabId == tabItemDecorator.selectedTabId }
             if (noTabSelected && tabs.isNotEmpty()) {
@@ -286,7 +295,7 @@ class TabSwitcherActivity : DuckDuckGoActivity(), TabSwitcherListener, Coroutine
         }
     }
 
-    private fun render(tabs: List<TabEntity>) {
+    private fun render(tabs: List<TabSwitcherItem>) {
         tabsAdapter.updateData(tabs)
     }
 
@@ -400,8 +409,12 @@ class TabSwitcherActivity : DuckDuckGoActivity(), TabSwitcherListener, Coroutine
     }
 
     override fun onTabDeleted(position: Int, deletedBySwipe: Boolean) {
-        tabsAdapter.getTab(position)?.let { tab ->
-            launch { viewModel.onMarkTabAsDeletable(tab, deletedBySwipe) }
+        tabsAdapter.getTabSwitcherItem(position)?.let { tab ->
+            when(tab) {
+                is TabSwitcherItem.Tab -> {
+                    launch { viewModel.onTabDeleted(tab.tabEntity) }
+                }
+            }
         }
     }
 

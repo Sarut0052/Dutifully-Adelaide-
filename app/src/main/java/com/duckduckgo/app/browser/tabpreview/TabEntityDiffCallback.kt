@@ -19,50 +19,62 @@ package com.duckduckgo.app.browser.tabpreview
 import android.os.Bundle
 import androidx.recyclerview.widget.DiffUtil
 import com.duckduckgo.app.tabs.model.TabEntity
+import com.duckduckgo.app.tabs.ui.TabSwitcherItem
 
-class TabEntityDiffCallback(old: List<TabEntity>, new: List<TabEntity>) : DiffUtil.Callback() {
+class TabEntityDiffCallback(old: List<TabSwitcherItem>, new: List<TabSwitcherItem>) : DiffUtil.Callback() {
 
     // keep a local copy of the lists to avoid any changes to the lists during the diffing process
     private val oldList = old.toList()
     private val newList = new.toList()
 
     private fun areItemsTheSame(
-        oldItem: TabEntity,
-        newItem: TabEntity,
+        oldItem: TabSwitcherItem,
+        newItem: TabSwitcherItem,
     ): Boolean {
-        return oldItem.tabId == newItem.tabId
+        return oldItem.id == newItem.id
     }
 
     private fun areContentsTheSame(
-        oldItem: TabEntity,
-        newItem: TabEntity,
+        oldItem: TabSwitcherItem,
+        newItem: TabSwitcherItem,
     ): Boolean {
-        return oldItem.tabPreviewFile == newItem.tabPreviewFile &&
-            oldItem.viewed == newItem.viewed &&
-            oldItem.title == newItem.title &&
-            oldItem.url == newItem.url
+        return when {
+            oldItem is TabSwitcherItem.Tab && newItem is TabSwitcherItem.Tab -> {
+                oldItem.tabEntity.tabPreviewFile == newItem.tabEntity.tabPreviewFile &&
+                    oldItem.tabEntity.viewed == newItem.tabEntity.viewed &&
+                    oldItem.tabEntity.title == newItem.tabEntity.title &&
+                    oldItem.tabEntity.url == newItem.tabEntity.url
+            }
+            else -> false
+        }
     }
 
     private fun getChangePayload(
-        oldItem: TabEntity,
-        newItem: TabEntity,
+        oldItem: TabSwitcherItem,
+        newItem: TabSwitcherItem,
     ): Bundle {
         val diffBundle = Bundle()
 
-        if (oldItem.title != newItem.title) {
-            diffBundle.putString(DIFF_KEY_TITLE, newItem.title)
-        }
+        when {
+            oldItem is TabSwitcherItem.Tab && newItem is TabSwitcherItem.Tab -> {
 
-        if (oldItem.url != newItem.url) {
-            diffBundle.putString(DIFF_KEY_URL, newItem.url)
-        }
+                if (oldItem.tabEntity.title != newItem.tabEntity.title) {
+                    diffBundle.putString(DIFF_KEY_TITLE, newItem.tabEntity.title)
+                }
 
-        if (oldItem.viewed != newItem.viewed) {
-            diffBundle.putBoolean(DIFF_KEY_VIEWED, newItem.viewed)
-        }
+                if (oldItem.tabEntity.url != newItem.tabEntity.url) {
+                    diffBundle.putString(DIFF_KEY_URL, newItem.tabEntity.url)
+                }
 
-        if (oldItem.tabPreviewFile != newItem.tabPreviewFile) {
-            diffBundle.putString(DIFF_KEY_PREVIEW, newItem.tabPreviewFile)
+                if (oldItem.tabEntity.viewed != newItem.tabEntity.viewed) {
+                    diffBundle.putBoolean(DIFF_KEY_VIEWED, newItem.tabEntity.viewed)
+                }
+
+                if (oldItem.tabEntity.tabPreviewFile != newItem.tabEntity.tabPreviewFile) {
+                    diffBundle.putString(DIFF_KEY_PREVIEW, newItem.tabEntity.tabPreviewFile)
+                }
+
+            }
         }
 
         return diffBundle

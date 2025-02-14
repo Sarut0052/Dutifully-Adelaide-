@@ -180,4 +180,33 @@ class TabSwitcherViewModel @Inject constructor(
             tabRepository.setTabLayoutType(newLayoutType)
         }
     }
+
+    suspend fun insertRandomTabs() {
+        if (tabs.value?.size == 1) {
+            val randomUrls = listOf(
+                "https://duckduckgo.com",
+                "https://example.com",
+                "https://privacy.com",
+                "https://spreadprivacy.com",
+                "https://wikipedia.org",
+                "https://privacyguides.org",
+                "https://tosdr.org",
+                "https://signal.org",
+                "https://proton.me",
+                "https://eff.org",
+                "https://fsf.org",
+                "https://opensource.org",
+                "https://mozilla.org",
+                "https://github.com",
+                "https://archive.org"
+            )
+
+            repeat(100) {
+                val randomIndex = (0..randomUrls.size - 1).random()
+                tabRepository.add(
+                    url = randomUrls[randomIndex],
+                )
+            }
+        }
+    }
 }

@@ -53,9 +53,14 @@ class TabItemDecorator(
             val child = recyclerView.getChildAt(i)
 
             val positionInAdapter = recyclerView.getChildAdapterPosition(child)
-            adapter.getTab(positionInAdapter)?.let { tab ->
-                if (tab.tabId == selectedTabId) {
-                    drawSelectedTabDecoration(child, canvas)
+            adapter.getTabSwitcherItem(positionInAdapter)?.let { item ->
+                when(item) {
+                    is TabSwitcherItem.Tab -> {
+                        val tab = item.tabEntity
+                        if (tab.tabId == selectedTabId) {
+                            drawSelectedTabDecoration(child, canvas)
+                        }
+                    }
                 }
             }
         }
